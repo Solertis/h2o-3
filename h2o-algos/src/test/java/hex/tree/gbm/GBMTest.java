@@ -635,7 +635,7 @@ public class GBMTest extends TestUtil {
     System.out.println("MSEs End");
     System.out.flush();
     for( double mse : mses )
-      assertEquals(0.21694215729861027, mse, 1e-8); //check for the same result on 1 nodes and 5 nodes (will only work with enough chunks), mse, 1e-8); //check for the same result on 1 nodes and 5 nodes (will only work with enough chunks)
+      assertEquals(0.20288258652733904, mse, 1e-8); //check for the same result on 1 nodes and 5 nodes (will only work with enough chunks), mse, 1e-8); //check for the same result on 1 nodes and 5 nodes (will only work with enough chunks)
   }
 
   @Test public void testReprodubilityAirlineSingleNode() {
@@ -695,7 +695,7 @@ public class GBMTest extends TestUtil {
     for(double d:mses)
       System.out.println(d);
     for( double mse : mses )
-      assertEquals(0.21694215729861027, mse, 1e-8); //check for the same result on 1 nodes and 5 nodes (will only work with enough chunks)
+      assertEquals(0.20288258652733904, mse, 1e-8); //check for the same result on 1 nodes and 5 nodes (will only work with enough chunks)
   }
 
   // HEXDEV-223
@@ -1403,7 +1403,7 @@ public class GBMTest extends TestUtil {
               "DepTime", "ArrTime", "ActualElapsedTime",
               "AirTime", "ArrDelay", "DepDelay", "Cancelled",
               "CancellationCode", "CarrierDelay", "WeatherDelay",
-              "NASDelay", "SecurityDelay", "LateAircraftDelay", "IsArrDelayed"
+              "NASDelay", "SecurityDelay", "LateAircraftDelay", "IsArrDelayed", "TailNum"
       }) {
         tfr.remove(s).remove();
       }
@@ -2116,9 +2116,9 @@ public class GBMTest extends TestUtil {
     parms._ntrees = 1;
     GBM job = new GBM(parms);
     GBMModel gbm = job.trainModel().get();
+    Log.info(df.toTwoDimTable());
     Frame preds = gbm.score(df);
-    Log.info(df);
-    Log.info(preds);
+    Log.info(preds.toTwoDimTable());
     Assert.assertTrue(gbm.testJavaScoring(df,preds,1e-15));
     Assert.assertTrue(Math.abs(preds.vec(0).at(0) - 0) < 1e-6);
     Assert.assertTrue(Math.abs(preds.vec(0).at(1) - 0) < 1e-6);
@@ -2978,11 +2978,7 @@ public class GBMTest extends TestUtil {
         double mae = ModelMetricsRegression.make(train_preds.vec(0), train.vec("y"), gaussian).mae();
         Log.info("Train MAE: " + mae);
         maes[i++] = mae;
-        if (nbins_cats >= 25) //even 25 can do a perfect job
-          Assert.assertEquals(mae, 0, 1e-8);
-        else
-          Assert.assertNotEquals(mae, 0, 1e-8);
-
+        Assert.assertEquals(mae, 0, 1e-8); // sorting of categoricals is enough
       } finally {
         if( model != null ) model.delete();
         if( train != null ) train.remove();
