@@ -48,7 +48,7 @@ def airline_gbm_random_grid():
         for temp in air_grid:
             run_time = run_time+temp._model_json["output"]["run_time"]
 
-        if run_time >=600000 or len(air_grid.get_grid()) < 5:
+        if run_time >=600000 or not(len(air_grid.get_grid())==5):
             print("*** index {0}, model length {1}, grid time sec {2}.".format(ind, len(air_grid.get_grid()), run_time/1000.0))
 
 if __name__ == "__main__":
