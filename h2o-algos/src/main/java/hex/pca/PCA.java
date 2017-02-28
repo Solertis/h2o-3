@@ -75,8 +75,7 @@ public class PCA extends ModelBuilder<PCAModel,PCAModel.PCAParameters,PCAModel.P
   }
 
   /*
-    Set value of wideDataset.  Note that this routine is used for test purposes only and is not intended
-    for users but more for developers for setting.
+    Set value of wideDataset.  Note that this routine is used for test purposes only and not for users.
  */
   public void setWideDataset(boolean isWide) {
     _wideDataset = isWide;
@@ -371,8 +370,11 @@ public class PCA extends ModelBuilder<PCAModel,PCAModel.PCAParameters,PCAModel.P
           parms._keep_u = false;
           parms._save_v_frame = false;
 
+          SVD svdP = new SVD(parms, _job);
+          svdP.setWideDataset(_wideDataset);  // force to treat dataset as wide even though it is not.
+
           // Build an SVD model
-          SVDModel svd = new SVD(parms, _job).trainModelNested(tranRebalanced);
+          SVDModel svd = svdP.trainModelNested(tranRebalanced);
           if (stop_requested()) {
             return;
           }

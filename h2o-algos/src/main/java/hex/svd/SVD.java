@@ -51,6 +51,7 @@ public class SVD extends ModelBuilder<SVDModel,SVDModel.SVDParameters,SVDModel.S
 
   // Number of columns in training set (p)
   private transient int _ncolExp;    // With categoricals expanded into 0/1 indicator cols
+  boolean _wideDataset = false;         // default with wideDataset set to be false.
 
   @Override protected SVDDriver trainModelImpl() { return new SVDDriver(); }
   @Override public ModelCategory[] can_build() { return new ModelCategory[]{ ModelCategory.DimReduction }; }
@@ -76,14 +77,28 @@ public class SVD extends ModelBuilder<SVDModel,SVDModel.SVDParameters,SVDModel.S
   protected void checkMemoryFootPrint() {
     HeartBeat hb = H2O.SELF._heartbeat;
     double p = LinearAlgebraUtils.numColsExp(_train,true);
-    long mem_usage = _parms._svd_method == SVDParameters.Method.GramSVD ? (long)(hb._cpus_allowed * p*p * 8/*doubles*/ * Math.log((double)_train.lastVec().nChunks())/Math.log(2.)) : 1; //one gram per core
+    double r = _train.numRows();
+
+    long mem_usage = _parms._svd_method == SVDParameters.Method.GramSVD ? (long)(hb._cpus_allowed * p*p * 8/*doubles*/
+            * Math.log((double)_train.lastVec().nChunks())/Math.log(2.)) : 1; //one gram per core
+    long mem_usage_w = _parms._svd_method == SVDParameters.Method.GramSVD ? (long)(hb._cpus_allowed * r*r * 8/*doubles*/
+            * Math.log((double)_train.lastVec().nChunks())/Math.log(2.)) : 1; //one gram per core
     long max_mem = hb.get_free_mem();
-    if (mem_usage > max_mem) {
+
+    if ((mem_usage > max_mem) && (mem_usage_w > max_mem) && _wideDataset) {
       String msg = "Gram matrices (one per thread) won't fit in the driver node's memory ("
               + PrettyPrint.bytes(mem_usage) + " > " + PrettyPrint.bytes(max_mem)
               + ") - try reducing the number of columns and/or the number of categorical factors.";
       error("_train", msg);
     }
+  }
+
+  /*
+		Set value of wideDataset.  Note that this routine is used for test purposes only and is not intended
+		for users but more for developers for setting.
+  */
+  public void setWideDataset(boolean isWide) {
+    _wideDataset = isWide;
   }
 
   @Override public void init(boolean expensive) {
@@ -418,10 +433,21 @@ public class SVD extends ModelBuilder<SVDModel,SVDModel.SVDParameters,SVDModel.S
           // NOTE: the Gram also will apply the specified Transforms on the data before performing the operation.
           // NOTE:  valid transforms are NONE, DEMEAN, STANDARDIZE...
           _job.update(1, "Begin distributed calculation of Gram matrix");
-          GramTask gtsk = new GramTask(_job._key, dinfo).doAll(dinfo._adaptedFrame);
-          Gram gram = gtsk._gram;   // TODO: This ends up with all NaNs if training data has too many missing values
-          assert gram.fullN() == _ncolExp;
-          model._output._nobs = gtsk._nobs;
+          GramTask gtsk = null;
+          Gram.OuterGramTask ogtsk = null;
+          Gram gram = null;
+
+          if (_wideDataset) {
+            ogtsk = new Gram.OuterGramTask(_job._key, dinfo).doAll(dinfo._adaptedFrame);
+            gram = ogtsk._gram;
+            model._output._nobs = ogtsk._nobs;
+          } else {
+            gtsk = new GramTask(_job._key, dinfo).doAll(dinfo._adaptedFrame);
+            gram = gtsk._gram;   // TODO: This ends up with all NaNs if training data has too many missing values
+            assert gram.fullN() == _ncolExp;
+            model._output._nobs = gtsk._nobs;
+          }
+
           model._output._total_variance = gram.diagSum() * gtsk._nobs / (gtsk._nobs-1);  // Since gram = X'X/nobs, but variance requires nobs-1 in denominator
           model.update(_job);
 
@@ -429,7 +455,7 @@ public class SVD extends ModelBuilder<SVDModel,SVDModel.SVDParameters,SVDModel.S
           _job.update(1, "Iteration 1 of power method");     // One unit of work
           // 1a) Initialize right singular vector v_1
           model._output._v = new double[_parms._nv][_ncolExp];  // Store V' for ease of use and transpose back at end
-          model._output._v[0] = powerLoop(gram, _parms._seed, model);
+          model._output._v[0] = powerLoop(gram, _parms._seed, model); // get the very first one
 
           // Keep track of I - \sum_i v_iv_i' where v_i = eigenvector i
           double[][] ivv_sum = new double[_ncolExp][_ncolExp];
@@ -451,7 +477,7 @@ public class SVD extends ModelBuilder<SVDModel,SVDModel.SVDParameters,SVDModel.S
           GramUpdate guptsk = new GramUpdate(_job._key, dinfo, ivv_sum).doAll(dinfo._adaptedFrame);
           Gram gram_update = guptsk._gram;
 
-          for (int k = 1; k < _parms._nv; k++) {
+          for (int k = 1; k < _parms._nv; k++) {  // loop through for each eigenvalue/eigenvector...
             if (stop_requested()) break;
             _job.update(1, "Iteration " + String.valueOf(k+1) + " of power method");   // One unit of work
 
