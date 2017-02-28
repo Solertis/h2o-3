@@ -16,7 +16,7 @@ def h2o_H2OFrameAtanh():
     h2oframe = h2o.H2OFrame(python_obj=python_lists)
     newframe = h2oframe.atanh()
     assert_is_type(newframe, H2OFrame)
-    pyunit_utils.assert_corret_frame_operation(h2oframe, newframe, "atanh")
+    pyunit_utils.assert_correct_frame_operation(h2oframe, newframe, "atanh")
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrameAtanh())

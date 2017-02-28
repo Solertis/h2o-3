@@ -1048,7 +1048,7 @@ class H2OFrame(object):
         """
         Convert the frame (containing strings / categoricals) into the ``date`` format.
 
-        :param str format: the format string (e.g. "YYYY-mm-dd")
+        :param str format: the format string (e.g. "%Y-%m-%d")
         :returns: new H2OFrame with "int" column types
         """
         fr = H2OFrame._expr(expr=ExprNode("as.Date", self, format), cache=self._ex._cache)

@@ -27,8 +27,8 @@ def h2o_H2OFrame_cumsum():
     assert_is_type(cumsum_row, H2OFrame)
 
     # check correct result
-    pyunit_utils.assert_corret_frame_operation(foo_transpose, cumsum_col, 'cumsum')
-    pyunit_utils.assert_corret_frame_operation(foo, cumsum_row, 'cumsum')
+    pyunit_utils.assert_correct_frame_operation(foo_transpose, cumsum_col, 'cumsum')
+    pyunit_utils.assert_correct_frame_operation(foo, cumsum_row, 'cumsum')
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrame_cumsum())

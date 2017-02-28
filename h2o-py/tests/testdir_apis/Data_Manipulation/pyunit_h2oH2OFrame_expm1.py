@@ -15,7 +15,7 @@ def h2o_H2OFrame_expm1():
     h2oframe = h2o.H2OFrame(python_obj=python_lists)
     newframe = h2oframe.expm1()
     assert_is_type(newframe, H2OFrame)
-    pyunit_utils.assert_corret_frame_operation(h2oframe, newframe, "expm1")
+    pyunit_utils.assert_correct_frame_operation(h2oframe, newframe, "expm1")
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrame_expm1())

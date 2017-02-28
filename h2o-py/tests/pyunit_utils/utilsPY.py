@@ -2888,13 +2888,13 @@ def cannaryHDFSTest(hdfs_name_node, file_name):
         else:       # exception is caused by other reasons.
             return False
 
-def assert_corret_frame_operation(h2oFrame, h2oNewFrame, operString):
+def assert_correct_frame_operation(sourceFrame, h2oResultFrame, operString):
     """
     This method checks each element of a numeric H2OFrame and throw an assert error if its value does not
     equal to the same operation carried out by python.
 
-    :param h2oFrame: original H2OFrame.
-    :param h2oNewFrame: H2OFrame after operation on original H2OFrame is carried out.
+    :param sourceFrame: original H2OFrame.
+    :param h2oResultFrame: H2OFrame after operation on original H2OFrame is carried out.
     :param operString: str representing one of 'abs', 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atanh',
         'ceil', 'cos', 'cosh', 'cospi', 'cumprod', 'cumsum', 'digamma', 'exp', 'expm1', 'floor', 'round',
         'sin', 'sign', 'round', 'sinh', 'tan', 'tanh'
@@ -2909,31 +2909,31 @@ def assert_corret_frame_operation(h2oFrame, h2oNewFrame, operString):
     result_val = 0.0
 
     if operString == "log1p":
-        stringOperations = 'result_val=math.log(h2oFrame[row_ind, col_ind]+1)'
+        stringOperations = 'result_val=math.log(sourceFrame[row_ind, col_ind]+1)'
     elif operString == 'signif':
-        stringOperations = 'result_val = round(h2oFrame[row_ind, col_ind], 7)'
+        stringOperations = 'result_val = round(sourceFrame[row_ind, col_ind], 7)'
     elif operString == 'trigamma':
-        stringOperations = 'result_val = scipy.special.polygamma(1,h2oFrame[row_ind, col_ind])'
+        stringOperations = 'result_val = scipy.special.polygamma(1,sourceFrame[row_ind, col_ind])'
     elif operString == 'digamma':
-        stringOperations = 'result_val = scipy.special.polygamma(0,h2oFrame[row_ind, col_ind])'
+        stringOperations = 'result_val = scipy.special.polygamma(0,sourceFrame[row_ind, col_ind])'
     elif operString=='cumprod':
-        stringOperations = 'result_val = factorial(h2oFrame[row_ind, col_ind])'
+        stringOperations = 'result_val = factorial(sourceFrame[row_ind, col_ind])'
     elif operString in validStrings:
-        stringOperations = 'result_val = math.'+operString+'(h2oFrame[row_ind, col_ind])'
+        stringOperations = 'result_val = math.'+operString+'(sourceFrame[row_ind, col_ind])'
     elif operString in nativeStrings:
-        stringOperations = 'result_val = '+operString+'(h2oFrame[row_ind, col_ind])'
+        stringOperations = 'result_val = '+operString+'(sourceFrame[row_ind, col_ind])'
     elif operString in npValidStrings:
-        stringOperations = 'result_val = np.'+operString+'(h2oFrame[row_ind, col_ind])'
+        stringOperations = 'result_val = np.'+operString+'(sourceFrame[row_ind, col_ind])'
     elif operString in multpi:
-        stringOperations = 'result_val = math.'+operString.split('p')[0]+'(h2oFrame[row_ind, col_ind]*math.pi)'
+        stringOperations = 'result_val = math.'+operString.split('p')[0]+'(sourceFrame[row_ind, col_ind]*math.pi)'
     else:
         assert False, operString+" is not a valid command."
 
-    for col_ind in range(h2oFrame.ncols):
-        for row_ind in range(h2oFrame.nrows):
+    for col_ind in range(sourceFrame.ncols):
+        for row_ind in range(sourceFrame.nrows):
             exec(stringOperations)
 
-            if abs(h2oNewFrame[row_ind, col_ind]-result_val) > 1e-6:
+            if abs(h2oResultFrame[row_ind, col_ind]-result_val) > 1e-6:
                 assert False, operString+" command is not working."
 
 def factorial(n):

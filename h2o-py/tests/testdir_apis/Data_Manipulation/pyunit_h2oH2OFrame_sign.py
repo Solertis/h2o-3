@@ -17,7 +17,7 @@ def h2o_H2OFrame_sign():
     h2oframe = h2o.H2OFrame(python_obj=python_lists)
     allsigns = h2oframe.sign()
 
-    pyunit_utils.assert_corret_frame_operation(h2oframe, allsigns, 'sign')
+    pyunit_utils.assert_correct_frame_operation(h2oframe, allsigns, 'sign')
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrame_sign())

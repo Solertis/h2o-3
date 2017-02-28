@@ -24,7 +24,7 @@ def h2o_H2OFrame_round():
     allframe = h2oframe.round(digits=0)
     assert_is_type(allframe, H2OFrame)      # check return type
         # check values
-    pyunit_utils.assert_corret_frame_operation(h2oframe, allframe, "round")
+    pyunit_utils.assert_correct_frame_operation(h2oframe, allframe, "round")
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrame_round())

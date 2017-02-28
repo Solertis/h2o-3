@@ -15,7 +15,7 @@ def h2o_H2OFrame_log10():
     h2oframe = h2o.H2OFrame(python_obj=python_lists)
     newframe = h2oframe.log10()
     assert_is_type(newframe, H2OFrame)
-    pyunit_utils.assert_corret_frame_operation(h2oframe, newframe, "log10")
+    pyunit_utils.assert_correct_frame_operation(h2oframe, newframe, "log10")
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrame_log10())

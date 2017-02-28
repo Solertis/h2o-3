@@ -17,7 +17,7 @@ def h2o_H2OFrame_gamma():
     h2o_data = h2o.H2OFrame(num_data)
     newframe = h2o_data.gamma()
     assert_is_type(newframe, H2OFrame)
-    pyunit_utils.assert_corret_frame_operation(h2o_data, newframe, "gamma")
+    pyunit_utils.assert_correct_frame_operation(h2o_data, newframe, "gamma")
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(h2o_H2OFrame_gamma())

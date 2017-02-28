@@ -27,7 +27,7 @@ def h2o_H2OFrame_cumprod():
     assert_is_type(cumprod_row, H2OFrame)
 
     # check correct result
-    pyunit_utils.assert_corret_frame_operation(foo_transpose, cumprod_col, 'cumprod')
+    pyunit_utils.assert_correct_frame_operation(foo_transpose, cumprod_col, 'cumprod')
     pyunit_utils.compare_frames(cumprod_col, cumprod_row.transpose(), cumprod_col.nrow, tol_time=0, tol_numeric=1e-6)
 
 if __name__ == "__main__":
